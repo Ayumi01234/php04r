@@ -1,49 +1,52 @@
 <?php
-//最初にSESSIONを開始！！ココ大事！！
-session_start();
+session_start();// ここも忘れずに！！！
 
 //POST値
-$lid = $_POST["lid"]; //lid
-$lpw = $_POST["lpw"]; //lpw
+$lid = $_POST['lid'];
+$lpw = $_POST['lpw'];
 
 //1.  DB接続します
-include("funcs.php");
+require_once('funcs.php');
 $pdo = db_conn();
 
 //2. データ登録SQL作成
-//* PasswordがHash化→条件はlidのみ！！
-$stmt = $pdo->prepare("SELECT * FROM gs_user_table WHERE lid=:lid AND life_flg=0"); 
+// gs_user_tableに、IDとWPがあるか確認する。
+
+$stmt = $pdo->prepare('SELECT * FROM gs_user_table WHERE lid = :lid AND lpw=:lpw');
 $stmt->bindValue(':lid', $lid, PDO::PARAM_STR);
+$stmt->bindValue(':lpw', $lpw, PDO::PARAM_STR); //* Hash化する場合はコメントする
 $status = $stmt->execute();
 
 //3. SQL実行時にエラーがある場合STOP
-if($status==false){
+if($status === false){
     sql_error($stmt);
 }
 
 //4. 抽出データ数を取得
-$val = $stmt->fetch();         //1レコードだけ取得する方法
-//$count = $stmt->fetchColumn(); //SELECT COUNT(*)で使用可能()
-sschk();
+$val = $stmt->fetch();
 
-//5.該当１レコードがあればSESSIONに値を代入
-//入力したPasswordと暗号化されたPasswordを比較！[戻り値：true,false]
-$pw = password_verify($lpw, $val["lpw"]); //$lpw = password_hash($lpw, PASSWORD_DEFAULT);   //パスワードハッシュ化
-if($pw){ 
-  //Login成功時
-  $_SESSION["chk_ssid"]  = session_id();
-  $_SESSION["kanri_flg"] = $val['kanri_flg'];
-  $_SESSION["name"]      = $val['name'];
-  //Login成功時（select.phpへ）
-  redirect("select.php");
+//if(password_verify($lpw, $val['lpw'])){ //* PasswordがHash化の場合はこっちのIFを使う
+if( $val['id'] != ''){
+    //Login成功時 該当レコードがあればSESSIONに値を代入
 
-}else{
-  //Login失敗時(login.phpへ)
-  redirect("login.php");
+//5. 該当レコードがあればSESSIONに値を代入
+//* if(password_verify($lpw, $val['lpw'])){
 
-}
+        // サーバーとクライアントで共有しているSessionIDをchk_ssidに記録しておく。
+        $_SESSION['chk_ssid']  = session_id();
+        //権限判断したい場合は、kanri_flgをsessionに入れておく。
+        // $_SESSION['kanri_flg'] = $val['kanri_flg'];
+        redirect('select.php');
+        }else{
+        //Login失敗時(Logout経由)
+        redirect('login.php');
+        }
+//     header('Location: select.php');
+// }else{
+// //Login失敗時(Logout経由)
+// header('Location: login.php');
+// }
 
 exit();
-
 
 ?>

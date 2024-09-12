@@ -1,62 +1,79 @@
 <?php
+
 session_start();
-$id = $_GET["id"]; //?id~**を受け取る
-include("funcs.php");
-sschk();
+require_once('funcs.php');
+loginCheck();
+
+// id の取得とバリデーション
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    exit('Invalid ID');
+}
+$id = $_GET['id'];
+
 $pdo = db_conn();
 
-//２．データ登録SQL作成
-$stmt = $pdo->prepare("SELECT * FROM gs_an_table WHERE id=:id");
-$stmt->bindValue(":id", $id, PDO::PARAM_INT);
+// データ取得SQL作成
+$stmt = $pdo->prepare('SELECT * FROM gs_an_table WHERE id=:id;');
+$stmt->bindValue(':id', $id, PDO::PARAM_INT);
 $status = $stmt->execute();
 
-//３．データ表示
-if($status==false) {
+// データ表示
+if ($status == false) {
     sql_error($stmt);
-}else{
-    $row = $stmt->fetch();
-}
+} else {
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row) {
+        exit('Data not found');
+    }
+};
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-  <meta charset="UTF-8">
-  <title>データ更新</title>
-  <link href="css/bootstrap.min.css" rel="stylesheet">
-  <style>div{padding: 10px;font-size:16px;}</style>
+    <meta charset="UTF-8">
+    <title>データ更新</title>
+    <link href="css/style.css" rel="stylesheet">
+
 </head>
+
 <body>
 
-<!-- Head[Start] -->
-<header>
-  <nav class="navbar navbar-default">
-    <div class="container-fluid">
-    <div class="navbar-header"><a class="navbar-brand" href="select.php">データ一覧</a></div>
+    <!-- Head[Start] -->
+    <nav class="navbar">
+        <a class="navbar-brand" href="index.php">データ登録</a>
+        <form class="logout-form" action="logout.php" method="post" onsubmit="return confirm('本当にログアウトしますか？');">
+            <button type="submit" class="logout-button">ログアウト</button>
+        </form>
+    </nav>
+    <!-- Head[End] -->
+
+    <!-- Main[Start] -->
+    <div class="container">
+        <h1>編集</h1>
+
+        <form method="POST" action="update.php">
+            <fieldset>
+                <input type="hidden" name="id" value="<?= $id; ?>" />
+                <div class="form-group">
+                    <label for="book_name">書籍名</label>
+                    <input type="text" id="book_name" name="book_name" value="<?= $row['book_name']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="book_url">書籍URL</label>
+                    <input type="text" id="book_url" name="book_url" value="<?= $row['book_url']; ?>">
+                </div>
+                <div class="form-group">
+                    <label for="book_comment">書籍コメント</label>
+                    <textarea id="book_comment" name="book_comment" rows="4"><?= $row['book_comment']; ?></textarea>
+                </div>
+                <input type="submit" value="更新">
+            </fieldset>
+        </form>
     </div>
-  </nav>
-</header>
-<!-- Head[End] -->
-
-
-<!-- Main[Start] -->
-<form method="POST" action="update.php">
-  <div class="jumbotron">
-   <fieldset>
-    <legend>[編集]</legend>
-     <label>名前：<input type="text" name="name" value="<?=$row["name"]?>"></label><br>
-     <label>Email：<input type="text" name="email" value="<?=$row["email"]?>"></label><br>
-     <label>年齢：<input type="text" name="age" value="<?=$row["age"]?>"></label><br>
-     <label><textArea name="naiyou" rows="4" cols="40"><?=$row["naiyou"]?></textArea></label><br>
-     <input type="submit" value="送信">
-     <input type="hidden" name="id" value="<?=$id?>">
-    </fieldset>
-  </div>
-</form>
-<!-- Main[End] -->
-
+    <!-- Main[End] -->
 
 </body>
+
 </html>

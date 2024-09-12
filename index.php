@@ -1,38 +1,46 @@
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <title>データ登録</title>
-        <link href="css/bootstrap.min.css" rel="stylesheet">
-        <style>div{padding: 10px;font-size:16px;}</style>
-    </head>
-    <body>
 
-        <!-- Head[Start] -->
-        <header>
-            <nav class="navbar navbar-default">
-                <div class="container-fluid">
-                    <div class="navbar-header"><a class="navbar-brand" href="select.php">データ一覧</a></div>
-                </div>
-            </nav>
-        </header>
-        <!-- Head[End] -->
+<head>
+    <meta charset="UTF-8">
+    <title>データ登録</title>
+    <link href="css/style.css" rel="stylesheet">
 
-        <!-- Main[Start] -->
-        <form method="POST" action="insert.php">
-            <div class="jumbotron">
-                <fieldset>
-                    <legend>フリーアンケート</legend>
-                    <label>名前：<input type="text" name="name"></label><br>
-                    <label>Email：<input type="text" name="email"></label><br>
-                    <label>年齢：<input type="text" name="age"></label><br>
-                    <label><textArea name="naiyou" rows="4" cols="40"></textArea></label><br>
-                    <input type="submit" value="送信">
-                </fieldset>
-            </div>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="select.php">データ一覧</a>
+        <a href="login.php">ログイン</a>
+        <form class="logout-form" action="logout.php" method="post">
+            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+            <form class="logout-form" action="logout.php" method="post" onsubmit="return confirm('本当にログアウトしますか？');">
+                <button type="submit" class="logout-button">ログアウト</button>
+            </form>
         </form>
-        <!-- Main[End] -->
+    </nav>
 
+    <div class="container">
+        <h1>ブックマーク</h1>
 
-    </body>
+        <form method="POST" action="insert.php">
+            <fieldset>
+                <div class="form-group">
+                    <label for="book_name">書籍名</label>
+                    <input type="text" id="book_name" name="book_name">
+                </div>
+                <div class="form-group">
+                    <label for="book_url">書籍URL</label>
+                    <input type="text" id="book_url" name="book_url">
+                </div>
+                <div class="form-group">
+                    <label for="book_comment">書籍コメント</label>
+                    <textarea id="book_comment" name="book_comment" rows="4"></textarea>
+                </div>
+                <input type="submit" value="送信">
+            </fieldset>
+        </form>
+    </div>
+</body>
+
 </html>
